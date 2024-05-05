@@ -15,9 +15,9 @@
 
 namespace dae
 {
-	const size_t block_size = sizeof(void*) * 4;
-	const size_t allocator_size = 1024;
-	const size_t pointer_size = sizeof(void*);
+	constexpr size_t block_size = sizeof(void*) * 4;
+	constexpr size_t allocator_size = 1024;
+	constexpr size_t pointer_size = sizeof(void*);
 
 	class Object
 	{
@@ -104,7 +104,27 @@ namespace dae
 		allocator.Release(pointer);
 	}
 
-	// Test with caps and allocate double side that will not fit
+	TEST(SingleLinkAllocatorTests, Fragmentation)
+	{
+		SingleLinkAllocator allocator(allocator_size);
+
+		const size_t nbPieces = allocator_size / block_size;
+		void** pointers = new void* [nbPieces];
+		const size_t test_size = allocator_size / nbPieces - pointer_size;
+
+		for (unsigned int idx{ 0 }; idx < nbPieces; ++idx)
+		{
+			pointers[idx] = allocator.Acquire(test_size);
+			EXPECT_NE(pointers[idx], nullptr);
+			std::memset(pointers[idx], 1, test_size);
+		}
+		for (unsigned int idx{ 0 }; idx < nbPieces; idx += 2)
+		{
+			allocator.Release(pointers[idx]);
+		}
+
+		EXPECT_THROW(allocator.Acquire(block_size * 2), std::bad_alloc);
+
+		delete[] pointers;
+	}
 }
-
-
