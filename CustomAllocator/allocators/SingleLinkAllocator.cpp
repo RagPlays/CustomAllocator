@@ -5,7 +5,9 @@
 static const unsigned char PATTERN_ALIGN = 0xFC;
 static const unsigned char PATTERN_ALLOC = 0x00;
 
-void dae::SingleLinkAllocator::FillAllocatedBlock(Block* block, const size_t nbBytes)
+using namespace dae;
+
+void SingleLinkAllocator::FillAllocatedBlock(Block* block, const size_t nbBytes)
 {
 	std::memset(block->data, PATTERN_ALLOC, nbBytes);
 	const int nbAlignBytes = (sizeof(Block) - ((nbBytes + sizeof(Header)) % sizeof(Block))) % sizeof(Block);
@@ -13,7 +15,7 @@ void dae::SingleLinkAllocator::FillAllocatedBlock(Block* block, const size_t nbB
 	std::memset(start, PATTERN_ALIGN, nbAlignBytes);
 }
 
-dae::SingleLinkAllocator::SingleLinkAllocator(const size_t sizeInBytes) :
+SingleLinkAllocator::SingleLinkAllocator(const size_t sizeInBytes) :
 	nbBlocks((sizeInBytes + sizeof(Block) - 1) / sizeof(Block)),
 	pool(new Block[nbBlocks + 1]), // one extra for the head
 	head(pool)
@@ -26,12 +28,12 @@ dae::SingleLinkAllocator::SingleLinkAllocator(const size_t sizeInBytes) :
 	head->next = first;
 }
 
-dae::SingleLinkAllocator::~SingleLinkAllocator()
+SingleLinkAllocator::~SingleLinkAllocator()
 {
 	delete[] pool;
 }
 
-void * dae::SingleLinkAllocator::Acquire(const size_t nbBytes)
+void * SingleLinkAllocator::Acquire(const size_t nbBytes)
 {
 	const auto nbBlocksToAcquire = (nbBytes + sizeof(Header) + sizeof(Block) - 1) / sizeof(Block);
 	auto previousBlock = head;
@@ -62,7 +64,7 @@ void * dae::SingleLinkAllocator::Acquire(const size_t nbBytes)
 	return nextBlock->data;
 }
 
-void dae::SingleLinkAllocator::Release(void * pointerToBuffer)
+void SingleLinkAllocator::Release(void * pointerToBuffer)
 {
 	Block* block = reinterpret_cast<Block*> (reinterpret_cast<Header*> (pointerToBuffer) - 1);
 

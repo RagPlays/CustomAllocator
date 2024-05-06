@@ -34,6 +34,7 @@ $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Werror>
 add_executable(allocator_tests
     tests/SingleLinkAllocatorTest.cpp
     tests/FixedSizeAllocatorTest.cpp
+    tests/StackAllocatorTest.cpp
     tests/main.cpp
 )
 

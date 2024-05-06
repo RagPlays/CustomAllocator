@@ -9,18 +9,24 @@ namespace dae
 	{
 	public:
 
-		explicit StackAllocator() = default;
-		virtual ~StackAllocator() = default;
+		explicit StackAllocator(const size_t sizeInBytes);
+		virtual ~StackAllocator();
 
 		StackAllocator(const StackAllocator& other) = delete;
 		StackAllocator(StackAllocator&& other) noexcept = delete;
 		StackAllocator& operator=(const StackAllocator& other) = delete;
 		StackAllocator& operator=(StackAllocator&& other) noexcept = delete;
 
-		virtual void* Acquire(size_t) override;
-		virtual void Release(void*) override;
+		virtual void* Acquire(const size_t nbBytes) override;
+		virtual void Release(void* marker) override;
+		void ReleaseAll();
+		void* GetMarker() const;
 
 	private:
+
+		const size_t m_Size;
+		void* m_Pool; // start pointer of stack
+		void* m_StackPointer; // current stack pointer
 
 	};
 }

@@ -3,7 +3,7 @@
 #include <cstring> // for std::memset
 
 #include "MemoryOverrides.h"
-#include "SingleLinkAllocator.h"
+#include "StackAllocator.h"
 
 #if __GNUC__
 // ignoring some gcc warnings because we are deliberately messing with memory
@@ -26,21 +26,20 @@ namespace dae
 		float m_float{ 0 };
 	};
 
-	TEST(SingleLinkAllocatorTests, SingleAllocation)
+	TEST(StackAllocatorTests, SingleAllocation)
 	{
-		SingleLinkAllocator allocator(AllocatorSize);
+		StackAllocator allocator(AllocatorSize);
 
 		const size_t test_size = AllocatorSize - PointerSize;
-		void* pointer;
-		pointer = allocator.Acquire(test_size);
+		void* pointer{ allocator.Acquire(test_size) };
 		EXPECT_NE(pointer, nullptr);
 		std::memset(pointer, 1, test_size);
 		allocator.Release(pointer);
 	}
 
-	TEST(SingleLinkAllocatorTests, NewDelete)
+	TEST(StackAllocatorTests, NewDelete)
 	{
-		SingleLinkAllocator allocator(AllocatorSize);
+		StackAllocator allocator(AllocatorSize);
 
 		Object* pointer = new (allocator) Object();
 		EXPECT_NE(pointer, nullptr);
@@ -48,18 +47,18 @@ namespace dae
 		delete pointer;
 	}
 
-	TEST(SingleLinkAllocatorTests, InvalidRelease)
+	TEST(StackAllocatorTests, InvalidRelease)
 	{
-		SingleLinkAllocator allocator(AllocatorSize);
+		StackAllocator allocator(AllocatorSize);
 
 		void* pointer = new char;
 		EXPECT_THROW(allocator.Release(pointer), std::runtime_error);
 		delete pointer;
 	}
 
-	TEST(SingleLinkAllocatorTests, TwoAllocations)
+	TEST(StackAllocatorTests, TwoAllocations)
 	{
-		SingleLinkAllocator allocator(AllocatorSize);
+		StackAllocator allocator(AllocatorSize);
 
 		const size_t test_size = AllocatorSize / 2 - PointerSize;
 		void* pointer_a{};
@@ -70,13 +69,12 @@ namespace dae
 		EXPECT_NE(pointer_b, nullptr);
 		std::memset(pointer_a, 1, test_size);
 		std::memset(pointer_b, 1, test_size);
-		allocator.Release(pointer_a);
-		allocator.Release(pointer_b);
+		allocator.ReleaseAll();
 	}
 
-	TEST(SingleLinkAllocatorTests, ManySmallAllocations)
+	TEST(StackAllocatorTests, ManySmallAllocations)
 	{
-		SingleLinkAllocator allocator(AllocatorSize);
+		StackAllocator allocator(AllocatorSize);
 
 		const size_t nbPieces = AllocatorSize / BlockSize;
 		void** pointers = new void* [nbPieces];
@@ -87,24 +85,23 @@ namespace dae
 			EXPECT_NE(pointers[i], nullptr);
 			std::memset(pointers[i], 1, test_size);
 		}
-		for (unsigned int i = 0; i < nbPieces; i++)
-			allocator.Release(pointers[i]);
+		allocator.ReleaseAll();
 		delete[] pointers;
 	}
 
-	TEST(SingleLinkAllocatorTests, OutOfMemory)
+	/*TEST(StackAllocatorTests, OutOfMemory)
 	{
-		SingleLinkAllocator allocator(AllocatorSize);
+		StackAllocator allocator(AllocatorSize);
 		const size_t test_size = AllocatorSize - PointerSize;
 		void* pointer;
 		pointer = allocator.Acquire(test_size);
 		EXPECT_NE(pointer, nullptr);
 		std::memset(pointer, 1, test_size);
 		EXPECT_THROW(allocator.Acquire(4), std::bad_alloc);
-		allocator.Release(pointer);
-	}
+		allocator.ReleaseAll();
+	}*/
 
-	TEST(SingleLinkAllocatorTests, Fragmentation)
+	/*TEST(SingleLinkAllocatorTests, Fragmentation)
 	{
 		SingleLinkAllocator allocator(AllocatorSize);
 
@@ -126,5 +123,5 @@ namespace dae
 		EXPECT_THROW(allocator.Acquire(BlockSize * 2), std::bad_alloc);
 
 		delete[] pointers;
-	}
+	}*/
 }

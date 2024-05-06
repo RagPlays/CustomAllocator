@@ -10,15 +10,15 @@ namespace dae
 	public:
 
 		explicit FixedSizeAllocator(size_t blockSize, size_t sizeInBytes);
-		virtual ~FixedSizeAllocator() = default;
+		virtual ~FixedSizeAllocator();
 
 		FixedSizeAllocator(const FixedSizeAllocator& other) = delete;
 		FixedSizeAllocator(FixedSizeAllocator&& other) noexcept = delete;
 		FixedSizeAllocator& operator=(const FixedSizeAllocator& other) = delete;
 		FixedSizeAllocator& operator=(FixedSizeAllocator&& other) noexcept = delete;
 
-		virtual void* Acquire(size_t) override;
-		virtual void Release(void*) override;
+		virtual void* Acquire(const size_t nbBytes) override;
+		virtual void Release(void* pointerToBuffer) override;
 
 	private:
 
@@ -27,7 +27,7 @@ namespace dae
 			Block* next;
 		};
 		const size_t m_BlockSize;
-		size_t nbBlocks;
+		size_t m_NbBlocks;
 		Block* m_Pool;
 		Block* m_Head;
 

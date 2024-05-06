@@ -1,36 +1,39 @@
 #include <stdexcept>
-#include <cstring>
 #include "FixedSizeAllocator.h"
 
-static const unsigned char PATTERN_ALIGN = 0xFC;
-static const unsigned char PATTERN_ALLOC = 0x00;
+using namespace dae;
 
-dae::FixedSizeAllocator::FixedSizeAllocator(size_t blockSize, size_t sizeInBytes)
+FixedSizeAllocator::FixedSizeAllocator(size_t blockSize, size_t sizeInBytes)
 	: m_BlockSize{ blockSize }
-	, nbBlocks{ sizeInBytes / blockSize }
-	, m_Pool{ new Block[nbBlocks + 1] }
-	, m_Head{m_Pool}
+	, m_NbBlocks{ sizeInBytes / blockSize }
+	, m_Pool{ new Block[m_NbBlocks + 1] }
+	, m_Head{ nullptr }
 {
-	Block* first = m_Pool + 1;
-	first->next = nullptr;
-
-	m_Head->next = first;
-
-	for (size_t i = 0; i < nbBlocks - 1; ++i)
-	{
-		Block* block = reinterpret_cast<Block*>(reinterpret_cast<uint8_t*>(m_Pool) + i * blockSize);
-		block->next = reinterpret_cast<Block*>(reinterpret_cast<uint8_t*>(m_Pool) + (i + 1) * blockSize);
-	}
-
-	Block* lastBlock = reinterpret_cast<Block*>(reinterpret_cast<uint8_t*>(m_Pool) + (nbBlocks - 1) * blockSize);
-	lastBlock->next = nullptr;
 }
 
-void* dae::FixedSizeAllocator::Acquire(size_t)
+FixedSizeAllocator::~FixedSizeAllocator()
 {
+	delete[] m_Pool;
+}
+
+void* FixedSizeAllocator::Acquire(const size_t)
+{
+	/*if (m_Head->next == nullptr)
+	{
+		throw std::bad_alloc{};
+		return nullptr;
+	}
+	Block* block{ m_Head };
+	m_Head = block->next;
+	return reinterpret_cast<void*>(block);*/
+
 	return nullptr;
 }
 
-void dae::FixedSizeAllocator::Release(void*)
+void FixedSizeAllocator::Release(void*)
 {
+	/*Block* block{ reinterpret_cast<Block*>(pointerToBuffer) };
+
+	block->next = m_Head;
+	m_Head = block;*/
 }
