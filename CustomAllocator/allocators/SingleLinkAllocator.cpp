@@ -69,7 +69,9 @@ void SingleLinkAllocator::Release(void * pointerToBuffer)
 	Block* block = reinterpret_cast<Block*> (reinterpret_cast<Header*> (pointerToBuffer) - 1);
 
 	if (block < pool || block > pool + nbBlocks)
-		throw std::runtime_error("invalid block");
+	{
+		throw std::runtime_error{ "invalid block" };
+	}
 
 	auto previousBlock = head;
 	auto current = previousBlock->next;

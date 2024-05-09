@@ -24,6 +24,7 @@ namespace dae
 
 		struct Block
 		{
+			// size of block (blocksize) "data"
 			Block* next;
 		};
 		const size_t m_BlockSize;

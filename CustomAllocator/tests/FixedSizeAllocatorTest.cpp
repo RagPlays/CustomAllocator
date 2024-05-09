@@ -13,7 +13,6 @@
 #endif
 #endif
 
-namespace dae
-{
+using namespace dae;
 
-}
+// Tests here

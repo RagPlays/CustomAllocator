@@ -16,8 +16,10 @@ FixedSizeAllocator::~FixedSizeAllocator()
 	delete[] m_Pool;
 }
 
-void* FixedSizeAllocator::Acquire(const size_t)
+void* FixedSizeAllocator::Acquire(const size_t nbBytes)
 {
+	if (nbBytes > m_BlockSize /*|| no memory left*/) throw std::bad_alloc{};
+
 	/*if (m_Head->next == nullptr)
 	{
 		throw std::bad_alloc{};
